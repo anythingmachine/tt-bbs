@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import Terminal from '../Terminal';
 import AuthScreen from './AuthScreen';
+import { Terminal } from '@/app/features/terminal';
 
 interface AuthScreenWrapperProps {
   typingSpeed?: number;
@@ -16,17 +16,11 @@ export default function AuthScreenWrapper({ typingSpeed = 5 }: AuthScreenWrapper
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-gray-900">
-        <div className="text-green-400 text-2xl animate-pulse">
-          Loading TT-BBS...
-        </div>
+        <div className="text-green-400 text-2xl animate-pulse">Loading TT-BBS...</div>
       </div>
     );
   }
 
   // If logged in, show the Terminal, otherwise show the login/register screen
-  return isLoggedIn ? (
-    <Terminal typingSpeed={typingSpeed} />
-  ) : (
-    <AuthScreen />
-  );
-} 
+  return isLoggedIn ? <Terminal typingSpeed={typingSpeed} /> : <AuthScreen />;
+}

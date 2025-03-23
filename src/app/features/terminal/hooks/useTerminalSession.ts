@@ -17,6 +17,7 @@ interface UseTerminalSessionResult {
   fetchWelcomeScreen: (existingSessionId?: string) => Promise<void>;
   processCommand: (command: string) => Promise<void>;
   setIsWaitingForInput: (value: boolean) => void;
+  setIsInitialized: (value: boolean) => void;
 }
 
 /**
@@ -30,7 +31,7 @@ export function useTerminalSession({
   showFullAscii,
 }: UseTerminalSessionProps): UseTerminalSessionResult {
   const [session, setSession] = useState<TerminalSession | null>(null);
-  const [isInitialized, _setIsInitialized] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isWaitingForInput, setIsWaitingForInput] = useState<boolean>(false);
 
   /**
@@ -123,5 +124,6 @@ export function useTerminalSession({
     fetchWelcomeScreen,
     processCommand,
     setIsWaitingForInput,
+    setIsInitialized,
   };
 }

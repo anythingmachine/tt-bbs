@@ -56,7 +56,7 @@ export const Terminal: React.FC<TerminalProps> = ({ typingSpeed = 5 }) => {
   const animateTyping = useTypingAnimation(setText, text, typingSpeed, scrollToBottom);
 
   // Use terminal session hook
-  const { isInitialized, isWaitingForInput, fetchWelcomeScreen, processCommand } =
+  const { isInitialized, isWaitingForInput, fetchWelcomeScreen, processCommand, setIsInitialized } =
     useTerminalSession({
       onWelcomeScreen: (welcomeText) => {
         setText('');
@@ -75,38 +75,44 @@ export const Terminal: React.FC<TerminalProps> = ({ typingSpeed = 5 }) => {
     if (isInitialized) return;
 
     const initializeTerminal = async () => {
-      // First, measure the terminal size - this needs to happen before API call
-      measureTerminalSize();
-
-      // Check for existing session in localStorage
-      const savedSessionId = terminalService.getStoredSessionId();
-
-      if (!savedSessionId) {
-        fetchWelcomeScreen();
-        return;
-      }
-
       try {
+        // First, measure the terminal size - this needs to happen before API call
+        measureTerminalSize();
+
+        // Check for existing session in localStorage
+        const savedSessionId = terminalService.getStoredSessionId();
+
+        if (!savedSessionId) {
+          await fetchWelcomeScreen();
+          setIsInitialized(true);
+          return;
+        }
+
         // Validate the session with the server
         const data = await terminalService.validateSession(savedSessionId);
 
         if (data.exists) {
           // Session exists, reuse it
-          fetchWelcomeScreen(savedSessionId);
+          await fetchWelcomeScreen(savedSessionId);
         } else {
           // Session doesn't exist anymore, create a new one
           terminalService.clearStoredSessionId();
-          fetchWelcomeScreen();
+          await fetchWelcomeScreen();
         }
+
+        setIsInitialized(true);
       } catch (error) {
         console.error('Error validating session:', error);
         // If error, create new session
-        fetchWelcomeScreen();
+        await fetchWelcomeScreen();
+        setIsInitialized(true);
       }
     };
 
     initializeTerminal();
-  }, [isInitialized, measureTerminalSize, fetchWelcomeScreen]);
+
+     
+  }, [isInitialized]);
 
   // ------ Terminal Functions ------
 
