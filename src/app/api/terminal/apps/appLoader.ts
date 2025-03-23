@@ -5,9 +5,14 @@ import { BbsApp, CommandResult } from 'bbs-sdk';
 import MessageBoardsApp from './built-in/messageBoards';
 import HangmanApp from './built-in/hangman';
 import GitHubAdminApp from './built-in/githubAdmin';
+import NpmAdminApp from './built-in/npmAdmin';
 
 // Import GitHub app loader
 import { loadAppFromGithub, refreshGithubApps } from './githubLoader';
+
+// Import npm functionality
+import { scanNpmPackages, loadNpmApp, getInstalledNpmPackages } from './npmAppLoader';
+import { installNpmPackage, uninstallNpmPackage } from './npmInstallService';
 
 // Map of loaded BBS apps by ID
 const appRegistry: Record<string, BbsApp> = {};
@@ -31,6 +36,9 @@ export function loadInstalledApps(): Record<string, BbsApp> {
 
     // Load built-in apps directly (more reliable in Next.js than dynamic loading)
     loadBuiltInAppsDirect();
+
+    // Load npm packages with bbs-app keyword
+    loadNpmApps();
 
     // Refresh any GitHub apps that were previously loaded
     refreshGithubApps()
@@ -83,7 +91,6 @@ function loadExternalApps() {
         const appPath = path.join(appDirectory, folder);
         console.log(`Attempting to load app from: ${appPath}`);
 
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const app = require(appPath);
 
         // Check if the app implements the BbsApp interface
@@ -165,6 +172,21 @@ function loadBuiltInAppsDirect() {
       );
     } else {
       console.warn('GitHub Admin app is not a valid BBS app');
+    }
+
+    // NPM Admin
+    if (isValidBbsApp(NpmAdminApp)) {
+      appRegistry[NpmAdminApp.id] = NpmAdminApp;
+
+      if (typeof NpmAdminApp.onInit === 'function') {
+        NpmAdminApp.onInit();
+      }
+
+      console.log(
+        `Loaded built-in BBS app: ${NpmAdminApp.name} (${NpmAdminApp.id}) v${NpmAdminApp.version}`
+      );
+    } else {
+      console.warn('NPM Admin app is not a valid BBS app');
     }
   } catch (error) {
     console.error('Error loading built-in apps directly:', error);
@@ -291,16 +313,103 @@ export function uninstallGithubApp(githubUrl: string): boolean {
 }
 
 /**
+ * Load npm packages with the bbs-app keyword
+ */
+function loadNpmApps() {
+  console.log('Loading npm apps...');
+
+  scanNpmPackages()
+    .then((packages) => {
+      console.log(
+        `Found ${packages.length} npm packages with bbs-app keyword: ${packages.join(', ')}`
+      );
+
+      // Load each package
+      for (const packageName of packages) {
+        console.log(`Attempting to load npm package: ${packageName}`);
+
+        loadNpmApp(packageName)
+          .then((app: any) => {
+            if (!app) {
+              console.warn(`Failed to load npm package: ${packageName}, app is null or undefined`);
+              return;
+            }
+
+            if (!isValidBbsApp(app)) {
+              console.warn(`Invalid BBS app format in npm package: ${packageName}`);
+              console.warn('App properties:', {
+                id: app.id,
+                name: app.name,
+                hasGetWelcomeScreen: typeof app.getWelcomeScreen === 'function',
+                hasHandleCommand: typeof app.handleCommand === 'function',
+                hasGetHelp: typeof app.getHelp === 'function',
+              });
+              return;
+            }
+
+            // Register the app
+            appRegistry[app.id] = app;
+
+            // Call onInit if implemented
+            if (typeof app.onInit === 'function') {
+              try {
+                app.onInit();
+              } catch (initError) {
+                console.error(`Error initializing npm app ${packageName}:`, initError);
+              }
+            }
+
+            console.log(`Successfully loaded npm BBS app: ${app.name} (${app.id}) v${app.version}`);
+          })
+          .catch((error) => {
+            console.error(`Error in async loading of npm package ${packageName}:`, error);
+          });
+      }
+    })
+    .catch((error) => {
+      console.error('Error scanning npm packages:', error);
+    });
+}
+
+/**
  * Install a BBS app from an npm package
  * This would be called by an admin tool to add apps to the BBS
  */
 export async function installApp(packageName: string): Promise<boolean> {
-  // In a real implementation, this would use npm/yarn to install the package
-  // and then load it into the registry
-  console.log(`Installing BBS app: ${packageName}`);
+  try {
+    console.log(`Installing BBS app from npm: ${packageName}`);
 
-  // This is a placeholder for the actual installation logic
-  return true;
+    // Install the package
+    const success = await installNpmPackage(packageName);
+
+    if (!success) {
+      console.error(`Failed to install npm package: ${packageName}`);
+      return false;
+    }
+
+    // Load the app
+    const app = await loadNpmApp(packageName);
+
+    if (!app) {
+      console.error(`Failed to load app from npm package: ${packageName}`);
+      return false;
+    }
+
+    // Register the app
+    appRegistry[app.id] = app;
+
+    // Call onInit if implemented
+    if (typeof app.onInit === 'function') {
+      app.onInit();
+    }
+
+    console.log(`Successfully installed npm BBS app: ${app.name} (${app.id})`);
+
+    return true;
+  } catch (error) {
+    console.error('Error installing npm BBS app:', error);
+    return false;
+  }
 }
 
 /**
@@ -338,6 +447,9 @@ export function getInstalledGithubAppUrls(): string[] {
 
 // Export types for convenience
 export type { BbsApp, CommandResult };
+
+// Export the getInstalledNpmPackages function
+export { getInstalledNpmPackages };
 
 // Initialize by loading apps
 console.log('Initializing app loader...');

@@ -53,7 +53,7 @@ const eslintConfig = [
       }], // Prevent unused variables except those starting with underscore
       "react/prop-types": "off", // Disable prop-types validation since we use TypeScript interfaces
       "react/display-name": "warn", // Warn instead of error for display names
-      
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
   
