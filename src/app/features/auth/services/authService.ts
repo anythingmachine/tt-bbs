@@ -1,38 +1,6 @@
 'use client';
 
-/**
- * Types for auth operations
- */
-export interface LoginRequest {
-  username: string;
-  password: string;
-  sessionId: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  password: string;
-  displayName: string;
-  email?: string;
-  sessionId: string;
-}
-
-export interface UserData {
-  id: string;
-  username: string;
-  displayName: string;
-  email?: string;
-  role: string;
-  joinDate: string;
-  lastLogin?: string;
-}
-
-export interface AuthResponse {
-  success: boolean;
-  message?: string;
-  user?: UserData;
-  isLoggedIn?: boolean;
-}
+import { LoginRequest, RegisterRequest, UserData, AuthResponse } from '../types/auth';
 
 /**
  * Service for handling authentication operations
@@ -52,17 +20,17 @@ export const authService = {
         },
         body: JSON.stringify(credentials),
       });
-      
+
       return await response.json();
     } catch (error) {
       console.error('Error during login:', error);
       return {
         success: false,
-        message: 'An error occurred during login. Please try again.'
+        message: 'An error occurred during login. Please try again.',
       };
     }
   },
-  
+
   /**
    * Register a new user and associate them with the current session
    * @param userData Registration data and session ID
@@ -77,17 +45,17 @@ export const authService = {
         },
         body: JSON.stringify(userData),
       });
-      
+
       return await response.json();
     } catch (error) {
       console.error('Error during registration:', error);
       return {
         success: false,
-        message: 'An error occurred during registration. Please try again.'
+        message: 'An error occurred during registration. Please try again.',
       };
     }
   },
-  
+
   /**
    * Log out the current user from their session
    * @param sessionId The current session ID
@@ -102,17 +70,17 @@ export const authService = {
         },
         body: JSON.stringify({ sessionId }),
       });
-      
+
       return await response.json();
     } catch (error) {
       console.error('Error during logout:', error);
       return {
         success: false,
-        message: 'An error occurred during logout. Please try again.'
+        message: 'An error occurred during logout. Please try again.',
       };
     }
   },
-  
+
   /**
    * Get the current user associated with a session
    * @param sessionId The current session ID
@@ -121,14 +89,14 @@ export const authService = {
   getCurrentUser: async (sessionId: string): Promise<AuthResponse> => {
     try {
       const response = await fetch(`/api/auth/me?sessionId=${sessionId}`);
-      
+
       return await response.json();
     } catch (error) {
       console.error('Error getting current user:', error);
       return {
         success: false,
-        message: 'An error occurred while fetching user data.'
+        message: 'An error occurred while fetching user data.',
       };
     }
-  }
-}; 
+  },
+};

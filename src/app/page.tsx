@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AuthProvider } from './context/AuthContext';
-import AuthScreenWrapper from './components/auth/AuthScreenWrapper';
+import { AuthProvider, AuthScreenWrapper } from './features/auth';
 import { TerminalAudio } from './features/terminal';
 
 export default function Home() {

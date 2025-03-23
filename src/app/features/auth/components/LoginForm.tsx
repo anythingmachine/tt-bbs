@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '..';
 
 export default function LoginForm() {
   const [username, setUsername] = useState('');
@@ -17,7 +17,7 @@ export default function LoginForm() {
   return (
     <div className="bg-gray-800 p-6 rounded-md w-full max-w-md shadow-md">
       <h2 className="text-xl text-green-400 mb-6 font-bold">Login to TT-BBS</h2>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="username" className="block text-green-400 mb-1">
@@ -32,7 +32,7 @@ export default function LoginForm() {
             required
           />
         </div>
-        
+
         <div className="mb-6">
           <label htmlFor="password" className="block text-green-400 mb-1">
             Password
@@ -46,13 +46,13 @@ export default function LoginForm() {
             required
           />
         </div>
-        
+
         {error && (
           <div className="mb-4 p-2 bg-red-900 border border-red-700 text-red-100 rounded">
             {error}
           </div>
         )}
-        
+
         <button
           type="submit"
           disabled={isLoading}
@@ -67,4 +67,4 @@ export default function LoginForm() {
       </form>
     </div>
   );
-} 
+}

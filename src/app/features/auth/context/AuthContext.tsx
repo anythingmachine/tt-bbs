@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, UserData } from '../services/authService';
+import { authService } from '../services/authService';
+import { UserData } from '../types/auth';
 import { useSession } from '../hooks/useSession';
 
 interface AuthContextType {

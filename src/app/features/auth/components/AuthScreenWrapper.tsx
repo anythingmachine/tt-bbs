@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '..';
 import AuthScreen from './AuthScreen';
 import { Terminal } from '@/app/features/terminal';
 

@@ -27,12 +27,12 @@ export function useSession(): UseSessionReturn {
 
     // Get existing session ID or create a new one
     let id = localStorage.getItem(SESSION_KEY);
-    
+
     if (!id) {
       id = uuidv4();
       localStorage.setItem(SESSION_KEY, id);
     }
-    
+
     setSessionId(id);
   }, []);
 
@@ -41,7 +41,7 @@ export function useSession(): UseSessionReturn {
    */
   const resetSession = () => {
     if (typeof window === 'undefined') return;
-    
+
     const newId = uuidv4();
     localStorage.setItem(SESSION_KEY, newId);
     setSessionId(newId);
@@ -53,10 +53,10 @@ export function useSession(): UseSessionReturn {
    */
   const clearSession = () => {
     if (typeof window === 'undefined') return;
-    
+
     localStorage.removeItem(SESSION_KEY);
     setSessionId('');
-    
+
     // After a short delay, create a new session ID
     setTimeout(() => {
       const newId = uuidv4();
@@ -66,4 +66,4 @@ export function useSession(): UseSessionReturn {
   };
 
   return { sessionId, resetSession, clearSession };
-} 
+}
