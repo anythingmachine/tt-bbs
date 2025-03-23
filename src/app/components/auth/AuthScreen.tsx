@@ -24,7 +24,7 @@ export default function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         <>
           <LoginForm />
           <p className="mt-6 text-gray-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
               onClick={() => setCurrentView('register')}
               className="text-green-400 hover:underline"
@@ -53,4 +53,4 @@ export default function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       </div>
     </div>
   );
-} 
+}

@@ -10,32 +10,32 @@ export default function RegisterForm() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
-  
+
   const { register, isLoading, error, clearError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     setFormError(null);
-    
+
     // Validate password match
     if (password !== confirmPassword) {
       setFormError('Passwords do not match');
       return;
     }
-    
+
     // Validate username length
     if (username.length < 3) {
       setFormError('Username must be at least 3 characters long');
       return;
     }
-    
+
     // Validate password complexity
     if (password.length < 6) {
       setFormError('Password must be at least 6 characters long');
       return;
     }
-    
+
     // Submit registration
     await register(username, password, displayName || username, email || undefined);
   };
@@ -43,7 +43,7 @@ export default function RegisterForm() {
   return (
     <div className="bg-gray-800 p-6 rounded-md w-full max-w-md shadow-md">
       <h2 className="text-xl text-green-400 mb-6 font-bold">Create a New Account</h2>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="username" className="block text-green-400 mb-1">
@@ -61,7 +61,7 @@ export default function RegisterForm() {
             Must be at least 3 characters. This will be your login name.
           </p>
         </div>
-        
+
         <div className="mb-4">
           <label htmlFor="displayName" className="block text-green-400 mb-1">
             Display Name
@@ -77,7 +77,7 @@ export default function RegisterForm() {
             Your public name shown to others. If empty, your username will be used.
           </p>
         </div>
-        
+
         <div className="mb-4">
           <label htmlFor="email" className="block text-green-400 mb-1">
             Email (Optional)
@@ -90,10 +90,10 @@ export default function RegisterForm() {
             className="w-full bg-gray-700 text-white border border-gray-600 rounded py-2 px-3 focus:outline-none focus:border-green-500"
           />
           <p className="text-gray-400 text-xs mt-1">
-            Used for account recovery only. We won't send you spam.
+            Used for account recovery only. We won&apos;t send you spam.
           </p>
         </div>
-        
+
         <div className="mb-4">
           <label htmlFor="password" className="block text-green-400 mb-1">
             Password *
@@ -106,11 +106,9 @@ export default function RegisterForm() {
             className="w-full bg-gray-700 text-white border border-gray-600 rounded py-2 px-3 focus:outline-none focus:border-green-500"
             required
           />
-          <p className="text-gray-400 text-xs mt-1">
-            Must be at least 6 characters long.
-          </p>
+          <p className="text-gray-400 text-xs mt-1">Must be at least 6 characters long.</p>
         </div>
-        
+
         <div className="mb-6">
           <label htmlFor="confirmPassword" className="block text-green-400 mb-1">
             Confirm Password *
@@ -124,13 +122,13 @@ export default function RegisterForm() {
             required
           />
         </div>
-        
+
         {(error || formError) && (
           <div className="mb-4 p-2 bg-red-900 border border-red-700 text-red-100 rounded">
             {formError || error}
           </div>
         )}
-        
+
         <button
           type="submit"
           disabled={isLoading}
@@ -145,4 +143,4 @@ export default function RegisterForm() {
       </form>
     </div>
   );
-} 
+}

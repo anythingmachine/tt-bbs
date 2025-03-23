@@ -1,7 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { ObjectId } from 'mongodb';
-import User from '../models/User';
-import { UserModel, UserDoc } from '../models/User';
+import User, { UserDoc, UserModel } from '../models/User';
 import { connectToDatabase } from './database';
 
 /**
@@ -11,14 +9,14 @@ import { connectToDatabase } from './database';
  */
 export async function getUserByUsername(username: string): Promise<UserModel | null> {
   await connectToDatabase();
-  
+
   try {
     const user = await User.findOne({ username: username.toLowerCase() });
-    
+
     if (!user) {
       return null;
     }
-    
+
     return new UserModel(user as unknown as UserDoc);
   } catch (error) {
     console.error('Error getting user by username:', error);
@@ -33,14 +31,14 @@ export async function getUserByUsername(username: string): Promise<UserModel | n
  */
 export async function getUserById(userId: string): Promise<UserModel | null> {
   await connectToDatabase();
-  
+
   try {
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return null;
     }
-    
+
     return new UserModel(user as unknown as UserDoc);
   } catch (error) {
     console.error('Error getting user by ID:', error);
@@ -55,14 +53,14 @@ export async function getUserById(userId: string): Promise<UserModel | null> {
  */
 export async function getUserByEmail(email: string): Promise<UserModel | null> {
   await connectToDatabase();
-  
+
   try {
     const user = await User.findOne({ email: email.toLowerCase() });
-    
+
     if (!user) {
       return null;
     }
-    
+
     return new UserModel(user as unknown as UserDoc);
   } catch (error) {
     console.error('Error getting user by email:', error);
@@ -83,11 +81,11 @@ export async function createUser(userData: {
   role?: 'user' | 'admin';
 }): Promise<UserModel | null> {
   await connectToDatabase();
-  
+
   try {
     // Hash the password
     const passwordHash = await bcrypt.hash(userData.password, 10);
-    
+
     // Create the new user
     const newUser = new User({
       username: userData.username.toLowerCase(),
@@ -96,9 +94,9 @@ export async function createUser(userData: {
       passwordHash,
       role: userData.role || 'user',
       joinDate: new Date(),
-      lastLogin: new Date()
+      lastLogin: new Date(),
     });
-    
+
     await newUser.save();
     return new UserModel(newUser as unknown as UserDoc);
   } catch (error) {
@@ -114,13 +112,10 @@ export async function createUser(userData: {
  */
 export async function updateLastLogin(userId: string): Promise<boolean> {
   await connectToDatabase();
-  
+
   try {
-    const result = await User.updateOne(
-      { _id: userId },
-      { $set: { lastLogin: new Date() } }
-    );
-    
+    const result = await User.updateOne({ _id: userId }, { $set: { lastLogin: new Date() } });
+
     return result.modifiedCount === 1;
   } catch (error) {
     console.error('Error updating last login:', error);
@@ -151,19 +146,16 @@ export async function verifyPassword(user: UserModel, password: string): Promise
  */
 export async function updatePassword(userId: string, newPassword: string): Promise<boolean> {
   await connectToDatabase();
-  
+
   try {
     // Hash the new password
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    
-    const result = await User.updateOne(
-      { _id: userId },
-      { $set: { passwordHash } }
-    );
-    
+
+    const result = await User.updateOne({ _id: userId }, { $set: { passwordHash } });
+
     return result.modifiedCount === 1;
   } catch (error) {
     console.error('Error updating password:', error);
     return false;
   }
-} 
+}

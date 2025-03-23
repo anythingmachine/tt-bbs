@@ -16,10 +16,11 @@ interface MongooseCache {
 
 // Use global type declaration to properly type the global mongoose cache
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: MongooseCache | undefined;
 }
 
-let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 // Initialize the global cache if not already initialized
 if (!global.mongoose) {
@@ -39,9 +40,7 @@ export async function connectToDatabase() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => mongoose);
   }
 
   try {
@@ -70,4 +69,4 @@ export async function disconnectFromDatabase() {
  */
 export function isDatabaseConnected(): boolean {
   return mongoose.connection.readyState === 1;
-} 
+}

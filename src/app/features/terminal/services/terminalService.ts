@@ -1,6 +1,6 @@
 'use client';
 
-import { CommandResponse, SessionResponse, WelcomeResponse } from '../types/terminal';
+import { WelcomeResponse, CommandResponse, SessionResponse } from '../types/terminal';
 
 /**
  * Service for handling terminal API calls
@@ -71,19 +71,19 @@ export const terminalService = {
    * @param sessionId The session ID to store
    */
   storeSessionId: (sessionId: string): void => {
-    localStorage.setItem('terminalSessionId', sessionId);
+    localStorage.setItem('bbs_session_id', sessionId);
   },
 
   /**
-   * Retrieve session ID from localStorage
+   * Get stored session ID from localStorage
    * @returns The stored session ID or null if not found
    */
-  getStoredSessionId: (): string | null => localStorage.getItem('terminalSessionId'),
+  getStoredSessionId: (): string | null => localStorage.getItem('bbs_session_id'),
 
   /**
-   * Remove session ID from localStorage
+   * Clear stored session ID from localStorage
    */
   clearStoredSessionId: (): void => {
-    localStorage.removeItem('terminalSessionId');
+    localStorage.removeItem('bbs_session_id');
   },
 };

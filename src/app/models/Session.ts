@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
+import mongoose from 'mongoose';
 
 export interface SessionDoc {
   _id: ObjectId;
@@ -14,7 +14,7 @@ export interface SessionDoc {
   lastActivity: Date;
   ipAddress?: string;
   userAgent?: string;
-  data?: Record<string, any>;
+  data?: Record<string, string>;
 }
 
 export class SessionModel {
@@ -30,7 +30,7 @@ export class SessionModel {
   lastActivity: Date;
   ipAddress?: string;
   userAgent?: string;
-  data?: Record<string, any>;
+  data?: Record<string, string>;
 
   constructor(doc: SessionDoc) {
     this.id = doc._id.toString();
@@ -67,67 +67,70 @@ export class SessionModel {
       id: this.userId,
       username: this.username,
       displayName: this.displayName,
-      role: this.role
+      role: this.role,
     };
   }
 }
 
-const sessionSchema = new mongoose.Schema({
-  sessionId: { 
-    type: String, 
-    required: true, 
-    unique: true,
-    index: true
+const sessionSchema = new mongoose.Schema(
+  {
+    sessionId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    userId: {
+      type: String,
+      required: false,
+    },
+    username: {
+      type: String,
+      required: false,
+    },
+    displayName: {
+      type: String,
+      required: false,
+    },
+    role: {
+      type: String,
+      required: false,
+    },
+    currentArea: {
+      type: String,
+      default: 'main',
+      required: true,
+    },
+    commandHistory: {
+      type: [String],
+      default: [],
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastActivity: {
+      type: Date,
+      default: Date.now,
+    },
+    ipAddress: {
+      type: String,
+      required: false,
+    },
+    userAgent: {
+      type: String,
+      required: false,
+    },
+    data: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
-  userId: { 
-    type: String, 
-    required: false 
-  },
-  username: { 
-    type: String, 
-    required: false 
-  },
-  displayName: { 
-    type: String, 
-    required: false 
-  },
-  role: { 
-    type: String, 
-    required: false 
-  },
-  currentArea: { 
-    type: String, 
-    default: 'main',
-    required: true
-  },
-  commandHistory: { 
-    type: [String], 
-    default: [],
-    required: true
-  },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
-  },
-  lastActivity: { 
-    type: Date, 
-    default: Date.now 
-  },
-  ipAddress: { 
-    type: String, 
-    required: false 
-  },
-  userAgent: { 
-    type: String, 
-    required: false 
-  },
-  data: { 
-    type: mongoose.Schema.Types.Mixed, 
-    default: {} 
+  {
+    timestamps: true, // Adds createdAt and updatedAt
   }
-}, {
-  timestamps: true // Adds createdAt and updatedAt
-});
+);
 
 // Create indexes for efficient querying
 sessionSchema.index({ userId: 1 });
@@ -135,4 +138,4 @@ sessionSchema.index({ lastActivity: 1 });
 
 const Session = mongoose.models.Session || mongoose.model('Session', sessionSchema);
 
-export default Session; 
+export default Session;

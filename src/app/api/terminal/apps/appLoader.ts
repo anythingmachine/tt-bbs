@@ -16,38 +16,40 @@ const appRegistry: Record<string, BbsApp> = {};
 const installedGithubApps: string[] = [];
 
 /**
- * Load all installed BBS apps 
+ * Load all installed BBS apps
  * This searches for apps in node_modules with the 'bbs-app' keyword
  */
 export function loadInstalledApps(): Record<string, BbsApp> {
   try {
     console.log('Loading BBS apps...');
-    
+
     // Clear the registry first to avoid duplicate entries when reloading
-    Object.keys(appRegistry).forEach(key => delete appRegistry[key]);
-    
+    Object.keys(appRegistry).forEach((key) => delete appRegistry[key]);
+
     // Load external apps from the bbs-apps directory
     loadExternalApps();
-    
+
     // Load built-in apps directly (more reliable in Next.js than dynamic loading)
     loadBuiltInAppsDirect();
-    
+
     // Refresh any GitHub apps that were previously loaded
-    refreshGithubApps().then(apps => {
-      apps.forEach(app => {
-        // Register or update the app
-        appRegistry[app.id] = app;
-        console.log(`Refreshed GitHub app: ${app.name} (${app.id})`);
+    refreshGithubApps()
+      .then((apps) => {
+        apps.forEach((app) => {
+          // Register or update the app
+          appRegistry[app.id] = app;
+          console.log(`Refreshed GitHub app: ${app.name} (${app.id})`);
+        });
+      })
+      .catch((error) => {
+        console.error('Error refreshing GitHub apps:', error);
       });
-    }).catch(error => {
-      console.error('Error refreshing GitHub apps:', error);
-    });
-    
+
     // Log the final app registry
     const appIds = Object.keys(appRegistry);
     console.log(`Total BBS apps loaded: ${appIds.length}`);
     console.log(`Available apps: ${appIds.join(', ')}`);
-    
+
     return { ...appRegistry };
   } catch (error) {
     console.error('Error loading BBS apps:', error);
@@ -63,38 +65,39 @@ function loadExternalApps() {
   // For now, we'll look for BBS apps in a predefined directory
   const appDirectory = path.join(process.cwd(), 'bbs-apps');
   console.log(`Looking for apps in: ${appDirectory}`);
-  
+
   // Check if directory exists
   if (fs.existsSync(appDirectory)) {
     // Read all subdirectories in the app directory
-    const appFolders = fs.readdirSync(appDirectory, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
-    
+    const appFolders = fs
+      .readdirSync(appDirectory, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
+
     console.log(`Found ${appFolders.length} potential app folders: ${appFolders.join(', ')}`);
-    
+
     // Load each app
     for (const folder of appFolders) {
       try {
         // Try to load the app
         const appPath = path.join(appDirectory, folder);
         console.log(`Attempting to load app from: ${appPath}`);
-        
+
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const app = require(appPath);
-        
+
         // Check if the app implements the BbsApp interface
         if (isValidBbsApp(app.default || app)) {
           const bbsApp = app.default || app;
-          
+
           // Register the app
           appRegistry[bbsApp.id] = bbsApp;
-          
+
           // Call onInit if implemented
           if (typeof bbsApp.onInit === 'function') {
             bbsApp.onInit();
           }
-          
+
           console.log(`Loaded BBS app: ${bbsApp.name} (${bbsApp.id}) v${bbsApp.version}`);
         } else {
           console.warn(`Invalid BBS app format in folder: ${folder}`);
@@ -116,44 +119,50 @@ function loadExternalApps() {
  */
 function loadBuiltInAppsDirect() {
   console.log('Loading built-in apps directly...');
-  
+
   // Add built-in apps to the registry
   try {
     // Message Boards
     if (isValidBbsApp(MessageBoardsApp)) {
       appRegistry[MessageBoardsApp.id] = MessageBoardsApp;
-      
+
       if (typeof MessageBoardsApp.onInit === 'function') {
         MessageBoardsApp.onInit();
       }
-      
-      console.log(`Loaded built-in BBS app: ${MessageBoardsApp.name} (${MessageBoardsApp.id}) v${MessageBoardsApp.version}`);
+
+      console.log(
+        `Loaded built-in BBS app: ${MessageBoardsApp.name} (${MessageBoardsApp.id}) v${MessageBoardsApp.version}`
+      );
     } else {
       console.warn('Message Boards app is not a valid BBS app');
     }
-    
+
     // Hangman
     if (isValidBbsApp(HangmanApp)) {
       appRegistry[HangmanApp.id] = HangmanApp;
-      
+
       if (typeof HangmanApp.onInit === 'function') {
         HangmanApp.onInit();
       }
-      
-      console.log(`Loaded built-in BBS app: ${HangmanApp.name} (${HangmanApp.id}) v${HangmanApp.version}`);
+
+      console.log(
+        `Loaded built-in BBS app: ${HangmanApp.name} (${HangmanApp.id}) v${HangmanApp.version}`
+      );
     } else {
       console.warn('Hangman app is not a valid BBS app');
     }
-    
+
     // GitHub Admin
     if (isValidBbsApp(GitHubAdminApp)) {
       appRegistry[GitHubAdminApp.id] = GitHubAdminApp;
-      
+
       if (typeof GitHubAdminApp.onInit === 'function') {
         GitHubAdminApp.onInit();
       }
-      
-      console.log(`Loaded built-in BBS app: ${GitHubAdminApp.name} (${GitHubAdminApp.id}) v${GitHubAdminApp.version}`);
+
+      console.log(
+        `Loaded built-in BBS app: ${GitHubAdminApp.name} (${GitHubAdminApp.id}) v${GitHubAdminApp.version}`
+      );
     } else {
       console.warn('GitHub Admin app is not a valid BBS app');
     }
@@ -165,14 +174,14 @@ function loadBuiltInAppsDirect() {
 /**
  * Type guard to validate that an object implements the BbsApp interface
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isValidBbsApp(obj: any): obj is BbsApp {
+
+function isValidBbsApp(obj: BbsApp): obj is BbsApp {
   if (!obj) {
     console.warn('App object is null or undefined');
     return false;
   }
-  
-  const hasRequiredProps = 
+
+  const hasRequiredProps =
     typeof obj.id === 'string' &&
     typeof obj.name === 'string' &&
     typeof obj.version === 'string' &&
@@ -181,7 +190,7 @@ function isValidBbsApp(obj: any): obj is BbsApp {
     typeof obj.getWelcomeScreen === 'function' &&
     typeof obj.handleCommand === 'function' &&
     typeof obj.getHelp === 'function';
-  
+
   if (!hasRequiredProps) {
     console.warn('App missing required properties:', {
       hasId: typeof obj.id === 'string',
@@ -191,10 +200,10 @@ function isValidBbsApp(obj: any): obj is BbsApp {
       hasAuthor: typeof obj.author === 'string',
       hasGetWelcomeScreen: typeof obj.getWelcomeScreen === 'function',
       hasHandleCommand: typeof obj.handleCommand === 'function',
-      hasGetHelp: typeof obj.getHelp === 'function'
+      hasGetHelp: typeof obj.getHelp === 'function',
     });
   }
-  
+
   return hasRequiredProps;
 }
 
@@ -204,11 +213,11 @@ function isValidBbsApp(obj: any): obj is BbsApp {
 export async function installGithubApp(githubUrl: string): Promise<BbsApp | null> {
   try {
     console.log(`Installing app from GitHub: ${githubUrl}`);
-    
+
     // Check if already installed
     if (installedGithubApps.includes(githubUrl)) {
       console.log(`GitHub app already installed: ${githubUrl}`);
-      
+
       // Try to refresh it
       for (const appId in appRegistry) {
         const app = appRegistry[appId];
@@ -217,30 +226,30 @@ export async function installGithubApp(githubUrl: string): Promise<BbsApp | null
         }
       }
     }
-    
+
     // Load the app from GitHub
     const app = await loadAppFromGithub(githubUrl);
-    
+
     if (!app) {
       console.error(`Failed to load app from GitHub: ${githubUrl}`);
       return null;
     }
-    
+
     // Register the app
     appRegistry[app.id] = app;
-    
+
     // Remember that this GitHub app is installed
     if (!installedGithubApps.includes(githubUrl)) {
       installedGithubApps.push(githubUrl);
     }
-    
+
     // Call onInit if implemented
     if (typeof app.onInit === 'function') {
       app.onInit();
     }
-    
+
     console.log(`Successfully installed GitHub app: ${app.name} (${app.id})`);
-    
+
     return app;
   } catch (error) {
     console.error('Error installing GitHub app:', error);
@@ -254,7 +263,7 @@ export async function installGithubApp(githubUrl: string): Promise<BbsApp | null
 export function uninstallGithubApp(githubUrl: string): boolean {
   try {
     console.log(`Uninstalling GitHub app: ${githubUrl}`);
-    
+
     // Find apps with this source
     let uninstalled = false;
     for (const appId in appRegistry) {
@@ -266,14 +275,14 @@ export function uninstallGithubApp(githubUrl: string): boolean {
         console.log(`Removed GitHub app: ${app.name} (${app.id})`);
       }
     }
-    
+
     // Remove from installed list
     const index = installedGithubApps.indexOf(githubUrl);
     if (index !== -1) {
       installedGithubApps.splice(index, 1);
       uninstalled = true;
     }
-    
+
     return uninstalled;
   } catch (error) {
     console.error('Error uninstalling GitHub app:', error);
@@ -289,7 +298,7 @@ export async function installApp(packageName: string): Promise<boolean> {
   // In a real implementation, this would use npm/yarn to install the package
   // and then load it into the registry
   console.log(`Installing BBS app: ${packageName}`);
-  
+
   // This is a placeholder for the actual installation logic
   return true;
 }
@@ -333,4 +342,4 @@ export type { BbsApp, CommandResult };
 // Initialize by loading apps
 console.log('Initializing app loader...');
 const loadedApps = loadInstalledApps();
-console.log(`App loading complete. App count: ${Object.keys(loadedApps).length}`); 
+console.log(`App loading complete. App count: ${Object.keys(loadedApps).length}`);

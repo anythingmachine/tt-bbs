@@ -1,5 +1,4 @@
-import { ObjectId } from 'mongodb';
-import Session, { SessionModel, SessionDoc } from '../models/Session';
+import Session, { SessionDoc, SessionModel } from '../models/Session';
 import { connectToDatabase } from './database';
 
 /**
@@ -10,11 +9,11 @@ import { connectToDatabase } from './database';
  */
 export async function getSession(sessionId: string): Promise<SessionModel> {
   await connectToDatabase();
-  
+
   try {
     // Try to find the session
     let session = await Session.findOne({ sessionId });
-    
+
     if (!session) {
       // If session doesn't exist, create a new one
       console.log(`Session ${sessionId} not found, creating new session`);
@@ -22,38 +21,35 @@ export async function getSession(sessionId: string): Promise<SessionModel> {
         sessionId,
         createdAt: new Date(),
         lastActivity: new Date(),
-        data: {}
+        data: {},
       });
-      
+
       await session.save();
     } else {
       // Update last active timestamp
-      await Session.updateOne(
-        { sessionId },
-        { $set: { lastActivity: new Date() } }
-      );
+      await Session.updateOne({ sessionId }, { $set: { lastActivity: new Date() } });
     }
-    
+
     return new SessionModel(session as unknown as SessionDoc);
   } catch (error) {
     console.error('Error in getSession:', error);
-    
+
     // Even if there's an error, create a minimal session object and return it
     // This ensures the function never fails completely
     const fallbackSession = new Session({
       sessionId,
       createdAt: new Date(),
       lastActivity: new Date(),
-      data: {}
+      data: {},
     });
-    
+
     try {
       await fallbackSession.save();
     } catch (saveError) {
       console.error('Failed to save fallback session:', saveError);
       // Continue even if save fails - we'll return an unsaved model
     }
-    
+
     return new SessionModel(fallbackSession as unknown as SessionDoc);
   }
 }
@@ -71,7 +67,7 @@ export async function createSession(
   userAgent?: string
 ): Promise<SessionModel | null> {
   await connectToDatabase();
-  
+
   try {
     const newSession = new Session({
       sessionId,
@@ -79,9 +75,9 @@ export async function createSession(
       lastActivity: new Date(),
       ipAddress,
       userAgent,
-      data: {}
+      data: {},
     });
-    
+
     await newSession.save();
     return new SessionModel(newSession as unknown as SessionDoc);
   } catch (error) {
@@ -97,7 +93,7 @@ export async function createSession(
  * @returns The updated session or null if update failed
  */
 export async function updateSession(
-  sessionId: string, 
+  sessionId: string,
   userData: {
     userId?: string;
     username?: string;
@@ -106,23 +102,23 @@ export async function updateSession(
   }
 ): Promise<SessionModel | null> {
   await connectToDatabase();
-  
+
   try {
     const session = await Session.findOneAndUpdate(
       { sessionId },
-      { 
+      {
         $set: {
           ...userData,
-          lastActivity: new Date()
-        }
+          lastActivity: new Date(),
+        },
       },
       { new: true }
     );
-    
+
     if (!session) {
       return null;
     }
-    
+
     return new SessionModel(session as unknown as SessionDoc);
   } catch (error) {
     console.error('Error updating session:', error);
@@ -141,32 +137,32 @@ export async function updateSessionData(
   data: Record<string, any>
 ): Promise<SessionModel | null> {
   await connectToDatabase();
-  
+
   try {
     const session = await Session.findOne({ sessionId });
-    
+
     if (!session) {
       return null;
     }
-    
+
     // Merge existing data with new data
     const updatedData = { ...session.data, ...data };
-    
+
     const updatedSession = await Session.findOneAndUpdate(
       { sessionId },
-      { 
+      {
         $set: {
           data: updatedData,
-          lastActivity: new Date()
-        }
+          lastActivity: new Date(),
+        },
       },
       { new: true }
     );
-    
+
     if (!updatedSession) {
       return null;
     }
-    
+
     return new SessionModel(updatedSession as unknown as SessionDoc);
   } catch (error) {
     console.error('Error updating session data:', error);
@@ -181,7 +177,7 @@ export async function updateSessionData(
  */
 export async function deleteSession(sessionId: string): Promise<boolean> {
   await connectToDatabase();
-  
+
   try {
     const result = await Session.deleteOne({ sessionId });
     return result.deletedCount === 1;
@@ -198,18 +194,18 @@ export async function deleteSession(sessionId: string): Promise<boolean> {
  */
 export async function cleanupExpiredSessions(days = 30): Promise<number> {
   await connectToDatabase();
-  
+
   try {
     const expirationDate = new Date();
     expirationDate.setDate(expirationDate.getDate() - days);
-    
+
     const result = await Session.deleteMany({
-      lastActivity: { $lt: expirationDate }
+      lastActivity: { $lt: expirationDate },
     });
-    
+
     return result.deletedCount || 0;
   } catch (error) {
     console.error('Error cleaning up expired sessions:', error);
     return 0;
   }
-} 
+}

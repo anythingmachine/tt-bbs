@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, AuthResponse, UserData } from '../services/authService';
+import { authService, UserData } from '../services/authService';
 import { useSession } from '../hooks/useSession';
 
 interface AuthContextType {
@@ -10,7 +10,12 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (username: string, password: string) => Promise<boolean>;
-  register: (username: string, password: string, displayName: string, email?: string) => Promise<boolean>;
+  register: (
+    username: string,
+    password: string,
+    displayName: string,
+    email?: string
+  ) => Promise<boolean>;
   logout: () => Promise<boolean>;
   clearError: () => void;
   resetAuthState: () => void;
@@ -83,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.login({
         username,
         password,
-        sessionId
+        sessionId,
       });
 
       if (response.success && response.user) {
@@ -105,9 +110,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Register function
   const register = async (
-    username: string, 
-    password: string, 
-    displayName: string, 
+    username: string,
+    password: string,
+    displayName: string,
     email?: string
   ): Promise<boolean> => {
     setIsLoading(true);
@@ -125,7 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password,
         displayName,
         email,
-        sessionId
+        sessionId,
       });
 
       if (response.success && response.user) {
@@ -158,7 +163,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const response = await authService.logout(sessionId);
-      
+
       if (response.success) {
         setUser(null);
         setIsLoggedIn(false);
@@ -197,12 +202,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     register,
     logout,
     clearError,
-    resetAuthState
+    resetAuthState,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}; 
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { createSession, getSession } from '../service';
-import { NextRequest } from 'next/server';
 
 // ASCII art for the BBS logo
 const BBS_LOGO = `
@@ -22,7 +21,7 @@ const BBS_LOGO = `
 // Generate the welcome message
 function generateWelcomeScreen() {
   const divider = '▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄';
-  
+
   return `${BBS_LOGO}
 
 ${divider}
@@ -71,14 +70,14 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const sessionId = searchParams.get('sessionId');
   const simplified = searchParams.get('simplified') === 'true';
-  
+
   // Handle session management
   let session;
-  
+
   if (sessionId) {
     // Try to get the existing session
     session = await getSession(sessionId);
-    
+
     // If no valid session found but sessionId was provided, create one with that ID
     if (!session) {
       console.log(`Session ${sessionId} not found, creating new session with provided ID`);
@@ -88,14 +87,14 @@ export async function GET(request: NextRequest) {
     // No sessionId provided, create a brand new session
     session = await createSession();
   }
-  
+
   // Generate the welcome screens
   const fullWelcomeText = generateWelcomeScreen();
   const simpleWelcomeText = generateSimplifiedWelcomeScreen();
-  
+
   // Default to showing the full welcome text
   const defaultWelcomeText = simplified ? simpleWelcomeText : fullWelcomeText;
-  
+
   // Return both full and simplified versions for responsive display
   return NextResponse.json({
     sessionId: session.sessionId,
@@ -109,7 +108,7 @@ export async function GET(request: NextRequest) {
       { key: '3', label: 'ONLINE GAMES' },
       { key: '4', label: 'USER PROFILES' },
       { key: '5', label: 'CHAT ROOMS' },
-      { key: 'X', label: 'LOGOFF' }
-    ]
+      { key: 'X', label: 'LOGOFF' },
+    ],
   });
-} 
+}

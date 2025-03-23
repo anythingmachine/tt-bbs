@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface TerminalAudioProps {
   autoPlay?: boolean;
@@ -14,21 +14,20 @@ const TerminalAudio = ({ autoPlay = true }: TerminalAudioProps) => {
     // Create a simple audio context for beep sounds
     const createBeepSound = (frequency: number, duration: number) => {
       if (typeof window === 'undefined') return;
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.type = 'square';
       oscillator.frequency.value = frequency;
       gainNode.gain.value = 0.1;
-      
+
       oscillator.start();
-      
+
       setTimeout(() => {
         oscillator.stop();
         audioContext.close();
@@ -42,22 +41,18 @@ const TerminalAudio = ({ autoPlay = true }: TerminalAudioProps) => {
       setTimeout(() => createBeepSound(1200, 100), 500);
       setTimeout(() => createBeepSound(800, 100), 800);
       setTimeout(() => createBeepSound(1400, 100), 1200);
-      
-      // Dial-up modem simulation 
+
+      // Dial-up modem simulation
       setTimeout(() => {
         if (audioRef.current) {
-          audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+          audioRef.current.play().catch((err) => console.log('Audio play failed:', err));
           setIsPlaying(true);
         }
       }, 1500);
     }
   }, [autoPlay, isPlaying]);
 
-  return (
-    <>
-      
-    </>
-  );
+  return <></>;
 };
 
-export default TerminalAudio; 
+export default TerminalAudio;

@@ -1,0 +1,75 @@
+.terminal {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  color: #33ff33;
+  font-family: 'VT323', monospace;
+  padding: 20px;
+  overflow: auto;
+  position: relative;
+  border: 2px solid #33ff33;
+  box-shadow: 0 0 10px rgba(51, 255, 51, 0.5);
+}
+
+.output {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 20px;
+}
+
+.output pre {
+  margin: 0;
+  font-family: inherit;
+}
+
+.cursorVisible {
+  display: inline-block;
+  color: #33ff33;
+  animation: blink 1s step-end infinite;
+}
+
+.cursorHidden {
+  display: inline-block;
+  opacity: 0;
+}
+
+.inputForm {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.input {
+  background: transparent;
+  border: none;
+  color: #33ff33;
+  font-family: 'VT323', monospace;
+  font-size: inherit;
+  outline: none;
+  width: 100%;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .terminal {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal {
+    padding: 5px;
+  }
+}
