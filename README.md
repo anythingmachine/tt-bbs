@@ -63,6 +63,84 @@ npm run dev
 
 The BBS will be available at http://localhost:3000.
 
+## Docker Deployment
+
+TT-BBS can be easily deployed using Docker, which provides a consistent environment and ensures all features work correctly, including npm package discovery and installation.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Deployment Steps
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/tt-bbs.git
+cd tt-bbs
+```
+
+2. Start the application using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+This will:
+
+- Build the TT-BBS container
+- Start a MongoDB container
+- Create persistent volumes for data storage
+- Expose the application on port 3000
+
+### Persistent Storage
+
+The Docker setup includes three persistent volumes:
+
+- **bbs-apps**: Stores custom BBS apps installed in the file system
+- **npm-packages**: Persists npm packages between container restarts
+- **mongo-data**: Stores the MongoDB database
+
+This ensures that your installed apps and user data remain available even after restarting the container.
+
+### Accessing the Container Shell
+
+To install npm packages or perform maintenance:
+
+```bash
+docker-compose exec tt-bbs /bin/sh
+```
+
+Once inside the container, you can use npm commands to install BBS apps:
+
+```bash
+# Inside the container
+npm install your-bbs-app
+```
+
+### Viewing Logs
+
+To view application logs:
+
+```bash
+docker-compose logs -f tt-bbs
+```
+
+### Stopping the Application
+
+To stop the application:
+
+```bash
+docker-compose down
+```
+
+To completely remove all containers and volumes:
+
+```bash
+docker-compose down -v
+```
+
 ## Apps
 
 TT-BBS comes with a few built-in apps:
@@ -83,17 +161,17 @@ A BBS app is an npm package that exports an object implementing the `BbsApp` int
 
 ```typescript
 export interface BbsApp {
-  id: string;              // Unique identifier for the app
-  name: string;            // Display name for the app
-  version: string;         // App version
-  description: string;     // App description
-  author: string;          // App author
-  
+  id: string; // Unique identifier for the app
+  name: string; // Display name for the app
+  version: string; // App version
+  description: string; // App description
+  author: string; // App author
+
   // Core methods
   getWelcomeScreen: () => string;
   handleCommand: (screenId: string | null, command: string, session: any) => CommandResult;
   getHelp: (screenId: string | null) => string;
-  
+
   // Optional lifecycle hooks
   onInit?: () => void;
   onUserEnter?: (userId: string, session: any) => void;
@@ -101,10 +179,10 @@ export interface BbsApp {
 }
 
 export interface CommandResult {
-  screen: string | null;   // Screen to display (null to exit the app)
-  response: string;        // Text response to display
-  refresh: boolean;        // Whether to refresh the whole screen
-  data?: any;              // Optional data to pass back to the client
+  screen: string | null; // Screen to display (null to exit the app)
+  response: string; // Text response to display
+  refresh: boolean; // Whether to refresh the whole screen
+  data?: any; // Optional data to pass back to the client
 }
 ```
 
@@ -136,7 +214,7 @@ const HelloWorldApp: BbsApp = {
   version: '1.0.0',
   description: 'A simple Hello World app',
   author: 'Your Name',
-  
+
   getWelcomeScreen(): string {
     return `
 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
@@ -151,44 +229,44 @@ Type SAY followed by a message to see it echoed back.
 Type B to return to the main menu.
 `;
   },
-  
+
   handleCommand(screenId, command, session): CommandResult {
     const cmd = command.trim().toUpperCase();
-    
+
     // Check for the SAY command
     if (cmd.startsWith('SAY ')) {
       const message = command.substring(4);
       return {
         screen: 'home',
         response: `You said: ${message}\n\nType SAY to say something else, or B to go back.`,
-        refresh: false
+        refresh: false,
       };
     }
-    
+
     // Check for the back command
     if (cmd === 'B' || cmd === 'BACK') {
       return {
         screen: null,
         response: 'Returning to main menu...',
-        refresh: true
+        refresh: true,
       };
     }
-    
+
     // Default response for invalid commands
     return {
       screen: 'home',
       response: `Unknown command: ${command}\nType SAY followed by a message, or B to go back.`,
-      refresh: false
+      refresh: false,
     };
   },
-  
+
   getHelp(screenId): string {
     return `
 HELLO WORLD COMMANDS:
 SAY [message] - Echo a message back
 B - Return to main menu
 `;
-  }
+  },
 };
 
 export default HelloWorldApp;

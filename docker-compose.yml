@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  tt-bbs:
+    build:
+      context: .
+    ports:
+      - '3000:3000'
+    volumes:
+      - bbs-apps:/app/bbs-apps
+      - npm-packages:/app/node_modules
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/tt-bbs
+      - NODE_ENV=production
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+    restart: unless-stopped
+
+volumes:
+  bbs-apps:
+    # This volume will store the BBS apps installed via npm
+  npm-packages:
+    # This volume persists npm packages between container restarts
+  mongo-data:
+    # This volume stores MongoDB data

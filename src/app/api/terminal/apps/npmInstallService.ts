@@ -22,7 +22,7 @@ export async function installNpmPackage(packageName: string): Promise<boolean> {
     installationStatus[packageName] = 'installing';
 
     // Run npm install
-    const installCmd = `npm install ${packageName}`;
+    const installCmd = `npm install ${packageName.toLowerCase()}`;
     const { stdout, stderr } = await execAsync(installCmd, { cwd: process.cwd() });
 
     if (stderr && !stderr.includes('npm WARN')) {
@@ -35,7 +35,7 @@ export async function installNpmPackage(packageName: string): Promise<boolean> {
     console.log(stdout);
 
     // Check if package was actually installed
-    const nodeModulesPath = path.join(process.cwd(), 'node_modules', packageName);
+    const nodeModulesPath = path.join(process.cwd(), 'node_modules', packageName.toLowerCase());
     if (!fs.existsSync(nodeModulesPath)) {
       console.error(`Package ${packageName} was not found after installation`);
       installationStatus[packageName] = 'failed';
