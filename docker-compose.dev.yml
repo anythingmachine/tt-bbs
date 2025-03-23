@@ -5,11 +5,13 @@ services:
     ports:
       - '3000:3000'
     volumes:
+      - .:/app # Map local code directory into container
+      - /app/node_modules # Don't override node_modules with host directory
       - bbs-apps:/app/bbs-apps
-      - npm-packages:/app/node_modules
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/tt-bbs
-      - NODE_ENV=production
+      - NODE_ENV=development # Set to development mode
+    command: npm run dev # Run Next.js in dev mode with hot reloading
     depends_on:
       - mongodb
     restart: unless-stopped
@@ -25,7 +27,5 @@ services:
 volumes:
   bbs-apps:
     # This volume will store the BBS apps installed via npm
-  npm-packages:
-    # This volume persists npm packages between container restarts
   mongo-data:
     # This volume stores MongoDB data
