@@ -43,10 +43,21 @@ export function useTerminalSession({
         // Get welcome screen with appropriate ASCII art version
         const data = await terminalService.fetchWelcomeScreen(existingSessionId, !showFullAscii);
 
-        // Save the session ID
-        if (!existingSessionId && data.sessionId) {
-          terminalService.storeSessionId(data.sessionId);
-          setSession({ sessionId: data.sessionId, currentArea: data.currentArea || 'main' });
+        // Determine which session ID to use
+        const sessionId = data.sessionId || existingSessionId;
+
+        // Set session if we have a valid session ID
+        if (sessionId) {
+          // For new sessions, store the ID in localStorage
+          if (data.sessionId && !existingSessionId) {
+            terminalService.storeSessionId(sessionId);
+          }
+
+          // Update session state
+          setSession({
+            sessionId: sessionId,
+            currentArea: data.currentArea || 'main',
+          });
         }
 
         if (!data.defaultWelcomeText) {
